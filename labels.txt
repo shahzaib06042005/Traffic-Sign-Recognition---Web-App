@@ -1,0 +1,5 @@
+No_Entry
+Speed_Limit_30
+Stop
+Turn_Right
+Yield
