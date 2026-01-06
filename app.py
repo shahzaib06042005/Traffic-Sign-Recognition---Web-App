@@ -59,10 +59,16 @@ else:
         predicted_class_idx = np.argmax(predictions[0])
         confidence = 100 * np.max(predictions[0])
         
-        if confidence < 60:
-            return "No Sign Detected", confidence
+        # Get top 3 predictions for debugging
+        top_3_indices = np.argsort(predictions[0])[-3:][::-1]
+        top_3_props = []
+        for idx in top_3_indices:
+            top_3_props.append((classes[idx], 100 * predictions[0][idx]))
+
+        if confidence < 40:
+            return "No Sign Detected", confidence, top_3_props
         
-        return classes[predicted_class_idx], confidence
+        return classes[predicted_class_idx], confidence, top_3_props
 
     input_image = None
     
@@ -83,16 +89,19 @@ else:
         st.divider()
         with st.spinner('Analyzing...'):
             try:
-                label, confidence = predict_image(input_image)
+                label, confidence, top_3 = predict_image(input_image)
                 
-                st.subheader(f"Prediction: **{label}**")
-                st.progress(int(confidence))
-                st.caption(f"Confidence: {confidence:.2f}%")
-                
-                if confidence < 50:
-                    st.warning("⚠️ Low confidence. Make sure the sign is clearly visible.")
+                if label == "No Sign Detected":
+                    st.warning(f"⚠️ **{label}** (Best guess: {top_3[0][0]} at {top_3[0][1]:.2f}%)")
                 else:
+                    st.subheader(f"Prediction: **{label}**")
+                    st.progress(int(confidence))
+                    st.caption(f"Confidence: {confidence:.2f}%")
                     st.success("✅ Sign Recognized!")
+                
+                with st.expander("Debug: Top 3 Probabilities"):
+                    for name, prob in top_3:
+                        st.write(f"- **{name}**: {prob:.2f}%")
                     
             except Exception as e:
                 st.error(f"Error during prediction: {e}")
