@@ -8,8 +8,8 @@ import pathlib
 # Configuration
 MODEL_PATH = "traffic_sign_model.h5"
 LABELS_PATH = "labels.txt"
-IMG_HEIGHT = 32
-IMG_WIDTH = 32
+IMG_HEIGHT = 60
+IMG_WIDTH = 60
 
 st.set_page_config(page_title="Traffic Sign Recognizer", layout="wide")
 

@@ -11,9 +11,9 @@ DATA_DIR = pathlib.Path("data")
 TRAIN_DIR = DATA_DIR / "train"
 VAL_DIR = DATA_DIR / "val"
 BATCH_SIZE = 32
-IMG_HEIGHT = 32
-IMG_WIDTH = 32
-EPOCHS = 10
+IMG_HEIGHT = 60
+IMG_WIDTH = 60
+EPOCHS = 15 # Increased epochs for better convergence with augmentation
 MODEL_PATH = "traffic_sign_model.h5"
 LABELS_PATH = "labels.txt"
 
@@ -67,18 +67,26 @@ def train_model():
     train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
     val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
-    # Model Architecture (Simple CNN)
+    # Model Architecture (Simple CNN + Augmentation)
+    data_augmentation = Sequential([
+        layers.RandomFlip("horizontal", input_shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
+        layers.RandomRotation(0.1),
+        layers.RandomZoom(0.1),
+        layers.RandomContrast(0.1)
+    ])
+
     model = Sequential([
-        layers.Rescaling(1./255, input_shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
-        layers.Conv2D(16, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
+        data_augmentation,
+        layers.Rescaling(1./255),
         layers.Conv2D(32, 3, padding='same', activation='relu'),
         layers.MaxPooling2D(),
         layers.Conv2D(64, 3, padding='same', activation='relu'),
         layers.MaxPooling2D(),
+        layers.Conv2D(128, 3, padding='same', activation='relu'),
+        layers.MaxPooling2D(),
         layers.Flatten(),
-        layers.Dense(128, activation='relu'),
-        layers.Dropout(0.2), # Reduce overfitting
+        layers.Dense(256, activation='relu'),
+        layers.Dropout(0.3), # Increased dropout
         layers.Dense(num_classes, activation='softmax')
     ])
 
