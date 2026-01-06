@@ -31,7 +31,12 @@ SELECTED_CLASSES = {
     "17": "No_Entry",
     "1": "Speed_Limit_30",
     "13": "Yield",
-    "33": "Turn_Right"
+    "33": "Turn_Right",
+    "12": "Priority_Road",
+    "27": "Pedestrians",
+    "2": "Speed_Limit_50",
+    "34": "Turn_Left",
+    "40": "Roundabout"
 }
 
 def download_file(url, dest_path):

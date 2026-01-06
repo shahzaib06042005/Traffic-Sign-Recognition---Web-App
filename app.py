@@ -51,15 +51,13 @@ else:
 
         # Predict
         predictions = model.predict(img_array)
-        score = tf.nn.softmax(predictions[0]) # If model ends with softmax, this double applies it? 
-        # Wait, in train.py output is softmax. So predictions[0] IS the probability distribution.
-        # But let's check train.py. 
-        # train.py: layers.Dense(num_classes, activation='softmax')
-        # So predictions ARE probabilities. 
-        # However, for display, we just take the max.
+        # model output is already softmax, so predictions[0] are probabilities
         
         predicted_class_idx = np.argmax(predictions[0])
         confidence = 100 * np.max(predictions[0])
+        
+        if confidence < 60:
+            return "No Sign Detected", confidence
         
         return classes[predicted_class_idx], confidence
 

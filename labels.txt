@@ -1,5 +1,10 @@
 No_Entry
+Pedestrians
+Priority_Road
+Roundabout
 Speed_Limit_30
+Speed_Limit_50
 Stop
+Turn_Left
 Turn_Right
 Yield
