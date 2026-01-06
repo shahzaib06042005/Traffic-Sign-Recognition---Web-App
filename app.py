@@ -45,6 +45,9 @@ else:
 
     def predict_image(image):
         # Preprocess
+        if image.mode != "RGB":
+            image = image.convert("RGB")
+            
         img = image.resize((IMG_WIDTH, IMG_HEIGHT))
         img_array = tf.keras.preprocessing.image.img_to_array(img)
         img_array = tf.expand_dims(img_array, 0) # Create batch axis
