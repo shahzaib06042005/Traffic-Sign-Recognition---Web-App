@@ -13,7 +13,7 @@ VAL_DIR = DATA_DIR / "val"
 BATCH_SIZE = 32
 IMG_HEIGHT = 60
 IMG_WIDTH = 60
-EPOCHS = 15 # Increased epochs for better convergence with augmentation
+EPOCHS = 20 # Increased epochs for better convergence with heavier augmentation
 MODEL_PATH = "traffic_sign_model.h5"
 LABELS_PATH = "labels.txt"
 
@@ -62,21 +62,33 @@ def train_model():
         class_names=class_names
     )
 
-    # Optimization
+    # Optimization & Augmentation
     AUTOTUNE = tf.data.AUTOTUNE
-    train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
-    val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
-    # Model Architecture (Simple CNN + Augmentation)
+    # Define Augmentation Layers separately
     data_augmentation = Sequential([
-        layers.RandomFlip("horizontal", input_shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
-        layers.RandomRotation(0.1),
-        layers.RandomZoom(0.1),
-        layers.RandomContrast(0.1)
+        layers.RandomFlip("horizontal"),
+        layers.RandomRotation(0.2),
+        layers.RandomZoom(0.2), 
+        layers.RandomContrast(0.2),
+        layers.RandomBrightness(0.2),
+        layers.RandomTranslation(0.1, 0.1) 
     ])
 
+    # Apply augmentation to training data only
+    def augment(image, label):
+        return data_augmentation(image), label
+
+    train_ds = train_ds.cache()
+    train_ds = train_ds.shuffle(1000)
+    train_ds = train_ds.map(augment, num_parallel_calls=AUTOTUNE)
+    train_ds = train_ds.prefetch(buffer_size=AUTOTUNE)
+
+    val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+
+    # Model Architecture (No Augmentation Layer inside)
     model = Sequential([
-        data_augmentation,
+        layers.Input(shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
         layers.Rescaling(1./255),
         layers.Conv2D(32, 3, padding='same', activation='relu'),
         layers.MaxPooling2D(),
@@ -86,7 +98,7 @@ def train_model():
         layers.MaxPooling2D(),
         layers.Flatten(),
         layers.Dense(256, activation='relu'),
-        layers.Dropout(0.3), # Increased dropout
+        layers.Dropout(0.3), 
         layers.Dense(num_classes, activation='softmax')
     ])
 
